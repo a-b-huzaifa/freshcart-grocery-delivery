@@ -1,19 +1,17 @@
 require('dotenv').config({ quiet: true });
-const app = require('../src/app');
-const connectDB = require('../src/config/db');
 const mongoose = require('mongoose');
+const connectDB = require('../src/config/db');
+const app = require('../src/app');
 
-// Vercel serverless functions reuse the same Node container across multiple requests when possible.
-// We should check if we already have an active database connection.
-app.use(async (req, res, next) => {
-  try {
-    if (mongoose.connection.readyState !== 1 && process.env.MONGO_URI) {
-      await connectDB(process.env.MONGO_URI);
-    }
-    next();
-  } catch (error) {
-    next(error);
+// Top-level connection promise for cold starts
+let isConnected = false;
+
+module.exports = async (req, res) => {
+  if (!isConnected && process.env.MONGO_URI) {
+    await connectDB(process.env.MONGO_URI);
+    isConnected = true;
   }
-});
-
-module.exports = app;
+  
+  // Forward the request to the Express app
+  return app(req, res);
+};
