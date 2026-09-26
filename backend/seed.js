@@ -5,7 +5,12 @@ const User = require('./src/models/User');
 const Category = require('./src/models/Category');
 const Product = require('./src/models/Product');
 
-const URI = process.env.MONGO_URI || "mongodb+srv://abhuzaifa70_db_user:5oAWJVfFOlqAjpPO@freshcart.mvcaucg.mongodb.net/freshcart?appName=FreshCart";
+const URI = process.env.MONGO_URI;
+
+if (!URI) {
+  console.error("Missing MONGO_URI in .env file");
+  process.exit(1);
+}
 
 async function seed() {
   try {

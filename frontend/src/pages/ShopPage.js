@@ -114,20 +114,30 @@ function ShopPage() {
 
       <div className="category-chips">
         <div 
-          className={`category-chip ${selectedCategory === '' ? 'active' : ''}`}
+          className={`category-chip chip-all ${selectedCategory === '' ? 'active' : ''}`}
           onClick={() => setSelectedCategory('')}
         >
           All Categories
         </div>
-        {categories.map((c) => (
-          <div 
-            key={c._id} 
-            className={`category-chip ${selectedCategory === c._id ? 'active' : ''}`}
-            onClick={() => setSelectedCategory(c._id)}
-          >
-            {c.name}
-          </div>
-        ))}
+        {categories.map((c) => {
+          const catNameLower = c.name.toLowerCase();
+          let colorClass = '';
+          if (catNameLower.includes('produce')) colorClass = 'chip-produce';
+          else if (catNameLower.includes('dairy')) colorClass = 'chip-dairy';
+          else if (catNameLower.includes('meat')) colorClass = 'chip-meat';
+          else if (catNameLower.includes('bakery')) colorClass = 'chip-bakery';
+          else if (catNameLower.includes('pantry')) colorClass = 'chip-pantry';
+          
+          return (
+            <div 
+              key={c._id} 
+              className={`category-chip ${colorClass} ${selectedCategory === c._id ? 'active' : ''}`}
+              onClick={() => setSelectedCategory(c._id)}
+            >
+              {c.name}
+            </div>
+          );
+        })}
       </div>
 
       {loading ? (

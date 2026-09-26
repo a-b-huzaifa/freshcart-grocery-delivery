@@ -15,16 +15,24 @@ function Navbar() {
 
   return (
     <header className="navbar">
-      <Link to="/" className="brand logo-svg">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
-          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+      <Link to="/" className="brand logo-svg" style={{ color: 'var(--ink)' }}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" strokeLinejoin="miter">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" fill="var(--green)"></path>
           <line x1="3" y1="6" x2="21" y2="6"></line>
-          <path d="M16 10a4 4 0 0 1-8 0"></path>
+          <path d="M16 10a4 4 0 0 1-8 0" stroke="var(--pink)"></path>
         </svg>
-        <span>FRESHCART</span>
+        <span style={{ display: 'flex' }}>
+          <span style={{ color: 'var(--purple)' }}>F</span>
+          <span style={{ color: 'var(--accent)' }}>R</span>
+          <span style={{ color: 'var(--green)' }}>E</span>
+          <span style={{ color: 'var(--pink)' }}>S</span>
+          <span style={{ color: 'var(--blue)' }}>H</span>
+          <span style={{ color: 'var(--ink)' }}>CART</span>
+        </span>
       </Link>
       <nav className="navbar-links">
         <Link to="/">Shop</Link>
+        <Link to="/about">About</Link>
         {user && (
           <Link to="/cart" style={{ position: 'relative' }}>
             Cart

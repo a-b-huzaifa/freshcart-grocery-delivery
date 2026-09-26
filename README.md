@@ -60,7 +60,11 @@ This creates an admin account with:
 
 ## Features & UI
 
-The frontend includes a fully responsive, modern brutalist design system (CSS variables in `index.css`) featuring:
+The frontend features a fully responsive, custom **"Tutti-Frutti Brutalist"** design system (CSS variables in `index.css`). It blends stark structural brutalism (thick black borders, heavy offset shadows, monospace fonts) with a vibrant, playful color palette (Watermelon Pink, Citrus Orange, Lime Green, etc.). 
+
+Key UI features include:
+- **Tutti-Frutti Color Mapping:** Category chips, headers, and footer components are all uniquely color-coded.
+- **Dynamic Hero Section & About Page:** A bright, engaging hero section on the home page and a dedicated `/about` page with a colorful 4-step "How it works" guide.
 - **Global Toast Notifications** instead of static error banners.
 - **Quick View Modals** on product cards for detailed views.
 - **Client-Side Filtering & Sorting** (Search, Category chips, Sort by price, and In Stock toggle).
