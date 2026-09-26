@@ -13,6 +13,7 @@ function OrdersPage() {
 
   useEffect(() => {
     loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function loadOrders() {
