@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as ordersApi from '../api/ordersApi';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useCart } from '../context/CartContext';
 
 function getErrorMessage(err) {
   return err.response?.data?.error || err.message || 'Something went wrong';
@@ -9,62 +11,66 @@ function getErrorMessage(err) {
 
 function CartPage() {
   const { user } = useAuth();
+  const { addToast } = useToast();
+  const { cart, updateCartItem, removeFromCart, loadCart, clearCart } = useCart();
   const navigate = useNavigate();
-  const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [address, setAddress] = useState(user?.address || '');
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [loading, setLoading] = useState(!cart);
 
   useEffect(() => {
-    loadCart();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  function loadCart() {
-    setLoading(true);
-    ordersApi
-      .getCart()
-      .then(setCart)
-      .catch((err) => setError(getErrorMessage(err)))
-      .finally(() => setLoading(false));
-  }
+    if (!cart) {
+      loadCart().finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [cart, loadCart]);
 
   async function handleQuantityChange(productId, quantity) {
-    setError(null);
+    if (quantity < 1) return;
     try {
-      const updated = await ordersApi.updateCartItem(productId, quantity);
-      setCart(updated);
+      await updateCartItem(productId, quantity);
     } catch (err) {
-      setError(getErrorMessage(err));
+      addToast(getErrorMessage(err), 'error');
     }
   }
 
   async function handleRemove(productId) {
-    setError(null);
     try {
-      const updated = await ordersApi.removeFromCart(productId);
-      setCart(updated);
+      await removeFromCart(productId);
+      addToast('Item removed', 'success');
     } catch (err) {
-      setError(getErrorMessage(err));
+      addToast(getErrorMessage(err), 'error');
     }
   }
 
   async function handleCheckout(e) {
     e.preventDefault();
-    setError(null);
     setPlacingOrder(true);
     try {
       await ordersApi.createOrder(address);
+      addToast('Order placed successfully!', 'success');
+      clearCart();
       navigate('/orders');
     } catch (err) {
-      setError(getErrorMessage(err));
+      addToast(getErrorMessage(err), 'error');
     } finally {
       setPlacingOrder(false);
     }
   }
 
-  if (loading) return <p className="status">Loading cart…</p>;
+  if (loading) {
+    return (
+      <div className="page">
+        <h1>Your Cart</h1>
+        <div className="cart-list">
+          {[1, 2, 3].map((n) => (
+            <div className="cart-row skeleton" key={n} style={{ height: '64px' }}></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const items = cart?.items || [];
   const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
@@ -72,7 +78,6 @@ function CartPage() {
   return (
     <div className="page">
       <h1>Your Cart</h1>
-      {error && <div className="error-banner">{error}</div>}
 
       {items.length === 0 ? (
         <p className="status">Your cart is empty.</p>
@@ -87,14 +92,15 @@ function CartPage() {
                     ${item.product.price.toFixed(2)} / {item.product.unit}
                   </p>
                 </div>
-                <input
-                  type="number"
-                  min={1}
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(item.product._id, Number(e.target.value))
-                  }
-                />
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <button onClick={() => handleQuantityChange(item.product._id, item.quantity - 1)} disabled={item.quantity <= 1}>-</button>
+                  <input
+                    readOnly
+                    value={item.quantity}
+                    style={{ width: '40px', textAlign: 'center', padding: '9px 4px' }}
+                  />
+                  <button onClick={() => handleQuantityChange(item.product._id, item.quantity + 1)}>+</button>
+                </div>
                 <button className="delete-btn" onClick={() => handleRemove(item.product._id)}>
                   Remove
                 </button>

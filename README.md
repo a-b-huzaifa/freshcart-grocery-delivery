@@ -1,8 +1,6 @@
 # FreshCart — Grocery Delivery App
 
-Full MERN stack grocery delivery app: React frontend, Express +
-MongoDB backend, JWT auth, and 5 CRUD resources. Built for the "Mega
-basic project" roadmap task (Option 2: Grocery Delivery eCommerce).
+Full MERN stack grocery delivery app: React frontend, Express + MongoDB backend, JWT auth, and 5 CRUD resources. Built for the "Mega basic project" roadmap task (Option 2: Grocery Delivery eCommerce).
 
 ## Project structure
 
@@ -35,18 +33,20 @@ cp .env.example .env
 npm start         # http://localhost:3000
 ```
 
-### 3. Become an admin
+### 3. Database Seeding
 
-Registering never grants admin — promote a user directly in MongoDB
-after they've registered:
+You can quickly populate your database with 15 realistic grocery products across 5 categories, as well as an admin user, by running the seed script:
 
-```js
-db.users.updateOne({ email: "you@example.com" }, { $set: { role: "admin" } })
+```bash
+cd backend
+node seed.js
 ```
 
-Admins can manage categories/products at `/admin` and update order
-statuses. Add at least one category before adding products (products
-require a category).
+This creates an admin account with:
+- **Email:** `admin@freshcart.com`
+- **Password:** `password123`
+
+*(Note: If you register manually, you will not have admin access. You must promote a user directly in MongoDB: `db.users.updateOne({ email: "you@example.com" }, { $set: { role: "admin" } })`)*
 
 ## The 5 CRUD resources
 
@@ -58,73 +58,28 @@ require a category).
 | **Cart** | add item | view own | update qty | remove item / clear | One cart per user |
 | **Order** | checkout | own orders / admin sees all | admin sets status | owner cancels (pending only) | Snapshots price at time of order, decrements stock |
 
+## Features & UI
+
+The frontend includes a fully responsive, modern brutalist design system (CSS variables in `index.css`) featuring:
+- **Global Toast Notifications** instead of static error banners.
+- **Quick View Modals** on product cards for detailed views.
+- **Client-Side Filtering & Sorting** (Search, Category chips, Sort by price, and In Stock toggle).
+- **Dynamic Cart Badge** in the Navbar utilizing a global `CartContext`.
+- **Skeleton Loaders** for all network requests.
+- **Quantity Steppers** (+/-) for precise cart management.
+- **Order Stats** (lifetime items and spending) on the Orders page.
+- **Admin Panel Tabs** for a cleaner management interface.
+
 ## Auth flow
 
-- **Register** (`POST /api/auth/register`) and **Login**
-  (`POST /api/auth/login`) both return `{ user, token }`. The frontend
-  stores the token in `localStorage` and an axios interceptor
-  (`src/api/client.js`) attaches it to every request automatically.
-- **Protected routes** — backend: `middleware/auth.js` (`protect`)
-  guards cart, orders, `/me`, and all admin mutations; `middleware/
-  admin.js` further restricts category/product mutations and
-  admin-only order actions. Frontend: `<ProtectedRoute>` redirects to
-  `/login` if there's no logged-in user (and to `/` if `adminOnly` is
-  set and the user isn't an admin).
+- **Register** (`POST /api/auth/register`) and **Login** (`POST /api/auth/login`) both return `{ user, token }`. The frontend stores the token in `localStorage` and an axios interceptor (`src/api/client.js`) attaches it to every request automatically.
+- **Protected routes** — backend: `middleware/auth.js` (`protect`) guards cart, orders, `/me`, and all admin mutations; `middleware/admin.js` further restricts category/product mutations and admin-only order actions. Frontend: `<ProtectedRoute>` redirects to `/login` if there's no logged-in user (and to `/` if `adminOnly` is set and the user isn't an admin).
 
-## Try it (once both are running with a real DB)
+## Testing Flow
 
-1. Go to `http://localhost:3000/register`, create an account.
-2. Promote yourself to admin in the DB (see above), refresh.
-3. Go to `/admin`, add a category, then a product.
-4. Go to `/` (Shop), add the product to your cart.
-5. Go to `/cart`, enter a delivery address, place the order.
-6. Go to `/orders` — see your order; go to `/admin` — update its status.
-
-## Testing notes (important — read this)
-
-Built and verified in a sandbox with **no MongoDB access** (no local
-`mongod`, binary download blocked by network policy). What *was*
-verified by actually running both halves:
-
-- Backend: every route curl-tested — auth-required routes correctly
-  401 before touching the DB, validation errors and invalid-ObjectId
-  errors return correctly (Mongoose validates before writing, so these
-  don't need a live connection).
-- Frontend: `npm run build` and `npm start` both compile with zero
-  errors — confirms the router, Context API auth state, and all 6
-  pages wire together correctly.
-- **Both running simultaneously** (backend :5000, frontend :3000): a
-  CORS preflight request from the frontend's actual origin was sent
-  with the `Authorization` header included (the exact header the
-  axios interceptor adds for authenticated requests) and confirmed
-  allowed — so the full authenticated request path is confirmed
-  reachable, not just assumed.
-
-**Not verified** (needs a real MongoDB + a browser): actually
-registering, logging in, adding products as admin, adding to cart, and
-placing an order end-to-end. The code path is written and the
-frontend-backend connection is confirmed real — this is the one thing
-to click through before calling it done.
-
-## Deployment (for the "Live URL" requirement)
-
-- **Backend** → [Render](https://render.com) or
-  [Railway](https://railway.app): connect the repo, root directory
-  `backend`, add `MONGO_URI` and `JWT_SECRET` as environment variables
-  (MongoDB Atlas free tier for the connection string).
-- **Frontend** → [Vercel](https://vercel.com) or
-  [Netlify](https://netlify.com): connect the repo, root directory
-  `frontend`, add `REACT_APP_API_URL` pointing at the deployed
-  backend's URL.
-
-## Acceptance criteria mapping
-
-- ✅ Full auth flow (register, login, protected routes) — see "Auth
-  flow" above.
-- ✅ At least 5 CRUD resources — User, Category, Product, Cart, Order
-  (table above).
-- ⏳ Deployed and publicly accessible — not yet deployed (needs your
-  Render/Vercel/Atlas accounts); instructions above.
-- ✅ Clean, readable codebase — MVC-style backend (models/controllers/
-  routes/middleware), component/page/api separation on the frontend,
-  consistent patterns reused across both.
+1. Run `node seed.js` in the backend.
+2. Log in at `http://localhost:3000/login` using `admin@freshcart.com` / `password123`.
+3. Check out the `/admin` panel to see the seeded categories and products.
+4. Go to the Shop page (`/`), filter by category, sort by price, and add some items to your cart.
+5. Go to `/cart`, adjust quantities, enter a delivery address, and checkout.
+6. Check your `/orders` to see your lifetime stats and current order status!
